@@ -3,6 +3,13 @@ import IMatches from '../Interfaces/IMatches';
 import MatchesModel from '../database/models/MatchesModel';
 import { ServiceResponse } from '../Interfaces/ServiceResponse';
 
+type newMatch = {
+  homeTeamId: number;
+  homeTeamGoals: number;
+  awayTeamId: number;
+  awayTeamGoals: number;
+};
+
 export default class MatchesService {
   public static getAllMatches(): Promise<IMatches[]> {
     return MatchesModel.findAll({
@@ -47,5 +54,14 @@ export default class MatchesService {
   ): Promise<ServiceResponse<{ message: string }>> {
     await MatchesModel.update({ homeTeamGoals, awayTeamGoals }, { where: { id } });
     return { status: 'SUCCESSFUL', data: { message: 'Updated' } };
+  }
+
+  public static async createMatch(match: newMatch): Promise<IMatches | null> {
+    const newMatch = await MatchesModel.create({ ...match, inProgress: true });
+    const newMatchObj = await MatchesModel.findOne({ where: { id: newMatch.dataValues.id } });
+
+    if (!newMatchObj) return null;
+
+    return newMatchObj;
   }
 }
