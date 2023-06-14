@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import UsersService from '../services/UsersService';
 import mapStatusHTTP from '../utils/mapStatusHTTP';
+import JWT from '../utils/jwt';
 
 export default class UsersController {
   static async login(req: Request, res: Response) {
@@ -12,5 +13,17 @@ export default class UsersController {
     }
 
     return res.status(200).json(response.data);
+  }
+
+  static async roleLogin(req: Request, res: Response) {
+    const { authorization } = req.headers;
+    if (!authorization) {
+      return res.status(401).json({ message: 'Token not found' });
+    }
+    const response = await JWT.verify(authorization);
+
+    // console.log('response', JSON.parse(JSON.stringify(response)).role);
+
+    return res.status(200).json({ role: JSON.parse(JSON.stringify(response)).role });
   }
 }

@@ -20,8 +20,8 @@ export default class UsersService {
       };
     }
 
-    const { id } = user;
-    const token = jwt.sign(id, 'jwt_secret');
+    const { role } = user;
+    const token = jwt.sign({ email, role }, 'jwt_secret');
     return { status: 'SUCCESSFUL', data: { token } };
   }
 }
