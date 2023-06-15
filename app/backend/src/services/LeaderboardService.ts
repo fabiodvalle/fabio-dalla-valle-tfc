@@ -5,6 +5,16 @@ import IMatches from '../Interfaces/IMatches';
 // import TeamsService from './TeamsService';
 import ILeaderboard from '../Interfaces/ILeaderboard';
 
+type obj = {
+  points: number;
+  victories: number;
+  draws: number;
+  gf: number;
+  go: number;
+  team: { teamName: string };
+  totalGames: number;
+};
+
 export default class LeaderBoardService {
   public static getAllTeams(): Promise<ITeams[]> {
     return TeamsModel.findAll();
@@ -95,5 +105,39 @@ export default class LeaderBoardService {
       goalsBalance: countGoalsFavor - countGoalsOwn,
       efficiency: Number((100 * (totalPoints / (totalGames * 3))).toFixed(2)),
     };
+  }
+
+  public static returnObj = ({ points, victories, draws, gf, go, team, totalGames }: obj) => {
+    const obj = {
+      name: team.teamName,
+      totalPoints: points,
+      totalGames,
+      totalVictories: victories,
+      totalDraws: draws,
+      totalLosses: totalGames - victories - draws,
+      goalsFavor: gf,
+      goalsOwn: go,
+      goalsBalance: gf - go,
+      efficiency: Number((100 * (points / (totalGames * 3))).toFixed(2)),
+    };
+    return obj;
+  };
+
+  public static async getLeaderboard(id: number): Promise<ILeaderboard> {
+    const matchesAway = await MatchesModel.findAll({ where: { inProgress: 0, awayTeamId: id } });
+    const matchesHome = await MatchesModel.findAll({ where: { inProgress: 0, homeTeamId: id } });
+    const team = await LeaderBoardService.getTeamById(id);
+    const totalGames = matchesHome.length + matchesAway.length;
+    const mapAway = LeaderBoardService.mapMatchesAway(matchesAway);
+    const mapHome = LeaderBoardService.mapMatchesHome(matchesHome);
+
+    const points = (mapAway.countVictories + mapHome.countVictories) * 3
+      + mapAway.countDraws + mapHome.countDraws;
+    const victories = mapAway.countVictories + mapHome.countVictories;
+    const draws = mapAway.countDraws + mapHome.countDraws;
+    const gf = mapAway.countGoalsFavor + mapHome.countGoalsFavor;
+    const go = mapAway.countGoalsOwn + mapHome.countGoalsOwn;
+
+    return LeaderBoardService.returnObj({ points, victories, draws, gf, go, team, totalGames });
   }
 }

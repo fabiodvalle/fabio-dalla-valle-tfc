@@ -33,4 +33,15 @@ export default class LeaderboardController {
 
     return res.status(200).json(matches);
   }
+
+  static async getLeaderboard(req: Request, res: Response) {
+    const teams = await TeamsService.getAllTeams();
+    const matches = await Promise.all(teams.map(async (t: ITeams) => {
+      const match = await LeaderboardService.getLeaderboard(t.id);
+      return match;
+    }));
+    sort(matches);
+
+    return res.status(200).json(matches);
+  }
 }
