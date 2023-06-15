@@ -3,7 +3,7 @@ import ITeams from '../Interfaces/ITeams';
 import TeamsModel from '../database/models/TeamsModel';
 import IMatches from '../Interfaces/IMatches';
 // import TeamsService from './TeamsService';
-import ILeaderBoard from '../Interfaces/ILeaderboard';
+import ILeaderboard from '../Interfaces/ILeaderboard';
 
 export default class LeaderBoardService {
   public static getAllTeams(): Promise<ITeams[]> {
@@ -34,13 +34,14 @@ export default class LeaderBoardService {
     return { countDraws, countVictories, countGoalsFavor, countGoalsOwn };
   };
 
-  public static async getFineshedMatchesHome(id: number): Promise<ILeaderBoard> {
+  public static async getFineshedMatchesHome(id: number): Promise<ILeaderboard> {
     const matchesHome = await MatchesModel.findAll({ where: { inProgress: 0, homeTeamId: id } });
     const team = await LeaderBoardService.getTeamById(id);
     const totalGames = matchesHome.length;
     const { countDraws, countVictories, countGoalsFavor, countGoalsOwn } = LeaderBoardService
       .mapMatches(matchesHome);
     const totalPoints = countVictories * 3 + countDraws;
+    // const efficiency = (100 * (totalPoints / (totalGames * 3))).toFixed(2);
     return {
       name: team.teamName,
       totalPoints,
@@ -50,6 +51,8 @@ export default class LeaderBoardService {
       totalLosses: totalGames - countVictories - countDraws,
       goalsFavor: countGoalsFavor,
       goalsOwn: countGoalsOwn,
+      goalsBalance: countGoalsFavor - countGoalsOwn,
+      efficiency: Number((100 * (totalPoints / (totalGames * 3))).toFixed(2)),
     };
   }
 }

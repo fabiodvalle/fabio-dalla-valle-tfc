@@ -1,4 +1,4 @@
-export default interface ILeaderBoard {
+export default interface ILeaderboard {
   name: string,
   totalPoints: number,
   totalGames: number,
@@ -7,4 +7,6 @@ export default interface ILeaderBoard {
   totalLosses: number,
   goalsFavor: number,
   goalsOwn: number,
+  goalsBalance: number,
+  efficiency: number,
 }
