@@ -3,6 +3,9 @@ import LeaderboardController from '../controllers/LeaderboardController';
 
 const router = Router();
 
-router.get('/home', (req: Request, res: Response) => LeaderboardController.getAllMatches(req, res));
+router.get('/home', (req: Request, res: Response) => LeaderboardController
+  .getAllMatchesHome(req, res));
+router.get('/away', (req: Request, res: Response) => LeaderboardController
+  .getAllMatchesAway(req, res));
 
 export default router;

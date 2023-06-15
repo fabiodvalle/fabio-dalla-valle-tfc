@@ -15,7 +15,7 @@ export default class LeaderBoardService {
     return response;
   }
 
-  static mapMatches = (matches: IMatches[]) => {
+  static mapMatchesHome = (matches: IMatches[]) => {
     let countVictories = 0;
     let countDraws = 0;
     let countGoalsFavor = 0;
@@ -39,7 +39,48 @@ export default class LeaderBoardService {
     const team = await LeaderBoardService.getTeamById(id);
     const totalGames = matchesHome.length;
     const { countDraws, countVictories, countGoalsFavor, countGoalsOwn } = LeaderBoardService
-      .mapMatches(matchesHome);
+      .mapMatchesHome(matchesHome);
+    const totalPoints = countVictories * 3 + countDraws;
+    // const efficiency = (100 * (totalPoints / (totalGames * 3))).toFixed(2);
+    return {
+      name: team.teamName,
+      totalPoints,
+      totalGames,
+      totalVictories: countVictories,
+      totalDraws: countDraws,
+      totalLosses: totalGames - countVictories - countDraws,
+      goalsFavor: countGoalsFavor,
+      goalsOwn: countGoalsOwn,
+      goalsBalance: countGoalsFavor - countGoalsOwn,
+      efficiency: Number((100 * (totalPoints / (totalGames * 3))).toFixed(2)),
+    };
+  }
+
+  static mapMatchesAway = (matches: IMatches[]) => {
+    let countVictories = 0;
+    let countDraws = 0;
+    let countGoalsFavor = 0;
+    let countGoalsOwn = 0;
+    matches.map((match) => {
+      if (match.homeTeamGoals < match.awayTeamGoals) {
+        countVictories += 1;
+      }
+      if (match.homeTeamGoals === match.awayTeamGoals) {
+        countDraws += 1;
+      }
+      countGoalsFavor += match.awayTeamGoals;
+      countGoalsOwn += match.homeTeamGoals;
+      return { countDraws, countVictories, countGoalsFavor, countGoalsOwn };
+    });
+    return { countDraws, countVictories, countGoalsFavor, countGoalsOwn };
+  };
+
+  public static async getFineshedMatchesAway(id: number): Promise<ILeaderboard> {
+    const matchesHome = await MatchesModel.findAll({ where: { inProgress: 0, awayTeamId: id } });
+    const team = await LeaderBoardService.getTeamById(id);
+    const totalGames = matchesHome.length;
+    const { countDraws, countVictories, countGoalsFavor, countGoalsOwn } = LeaderBoardService
+      .mapMatchesAway(matchesHome);
     const totalPoints = countVictories * 3 + countDraws;
     // const efficiency = (100 * (totalPoints / (totalGames * 3))).toFixed(2);
     return {
