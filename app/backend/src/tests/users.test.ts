@@ -5,6 +5,7 @@ import chaiHttp = require('chai-http');
 
 import { app } from '../app';
 import UsersModel from '../database/models/UsersModel';
+import JWT from '../utils/jwt';
 
 chai.use(chaiHttp);
 
@@ -68,7 +69,8 @@ describe('Users', () => {
     expect(response.body).to.have.property('token');
   })
   it('login/role sem token', async () => {
-    const response = await chai.request(app).get('/login/role');
+    const response = await chai.request(app).get('/login/role').set('Authorization', '');
+        
     expect(response.status).to.equal(401);
     expect(response.body).to.have.property('message', 'Token not found');
 
@@ -79,12 +81,13 @@ describe('Users', () => {
     expect(response.body).to.have.property('message', 'Token must be a valid token');
 
   })
-  // it('login/role token válido', async () => {
-  //   const response = await chai.request(app).get('/login/role').set('Authorization', token);
-  //   console.log(response);
+  it('login/role token válido', async () => {
+    sinon.stub(JWT, 'verify').resolves({ email: 'admin@admin.com', role: 'admin', iat: 1686763832 })
+    const response = await chai.request(app).get('/login/role').set('Authorization', token);
+    // console.log(response);
     
-  //   expect(response.status).to.equal(200);
-  //   expect(response.body).to.have.property('role');
+    expect(response.status).to.equal(200);
+    expect(response.body).to.have.property('role');
 
-  // })
+  })
 });

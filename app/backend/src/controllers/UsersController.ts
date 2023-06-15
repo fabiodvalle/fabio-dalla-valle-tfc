@@ -22,7 +22,7 @@ export default class UsersController {
     }
     const response = await JWT.verify(authorization);
 
-    // console.log('response', JSON.parse(JSON.stringify(response)).role);
+    // console.log('response', (response));
 
     return res.status(200).json({ role: JSON.parse(JSON.stringify(response)).role });
   }
